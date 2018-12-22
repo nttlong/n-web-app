@@ -63,7 +63,8 @@ module.exports = {
     createApp: createApp,
     getApp:getApp,
     loadApps:require("./load-apps"),
-    settings:require("./settings")
+    settings:require("./settings"),
+    controller:require("./controller")
 
 };
 
