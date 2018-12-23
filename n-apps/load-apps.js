@@ -20,16 +20,25 @@ module.exports =function(){
             staticDir:"static"
         };
         var appName=dirs[i];
-        try {
-            if (fs.statSync(appSettingPath).isFile()) {
-                var appSets = require(appSettingPath);
-                Object.keys(appSets).forEach(key=>{
-                    appSettings[key]=appSets[key];
-                });
-            }    
-        } catch (error) {
-            
+        var appSets = require(appSettingPath);
+        if(appSets.hostDir===undefined){
+            throw(new Error(`"hostDir" was not found in ${appSettingPath}`));
         }
+        if (appSets.staticDir === undefined) {
+            throw (new Error(`"staticDir" was not found in ${appSettingPath}`));
+        }
+        if (appSets.viewsDir === undefined) {
+            throw (new Error(`"viewsDir" was not found in ${appSettingPath}`));
+        }
+        if (appSets.authenticate === undefined) {
+            throw (new Error(`"authenticate" was not found in ${appSettingPath}`));
+        }
+        if (appSets.middleWare === undefined) {
+            throw (new Error(`"middleWare" was not found in ${appSettingPath}`));
+        }
+        Object.keys(appSets).forEach(key => {
+            appSettings[key] = appSets[key];
+        }); 
         var AppStaticDir = path.sep.join(appDir, appSettings.staticDir);
         if (appSettings.hostDir){
             epApp.use("/" + appSettings.hostDir + '/static', express.static(AppStaticDir));    
@@ -37,6 +46,7 @@ module.exports =function(){
         else {
             epApp.use('/static', express.static(AppStaticDir));    
         }
+      
         epApp.use("/" + appSettings.hostDir + '/static', express.static(AppStaticDir));
         var stat = fs.statSync(appDir);
         if (stat.isDirectory()){
@@ -46,15 +56,21 @@ module.exports =function(){
                 var controllerFile = path.join(controllerDir, controllerDirSubDirs[j]);
                 
                 controllersCache[controllerFile] = require(controllerFile);
-                var config = controllersCache[controllerFile]
+                var config = controllersCache[controllerFile];
+                if (appSettings.hostDir===undefined){
+                    throw (new Error(`"hostDir" was not found in "${appDir}.settings.js"`))
+                }
                 var controllerConfig={
                     fileName:controllerFile,
                     url:config.url,
-                    template:appSettings.template||"templates",
+                    template:config.template,
                     app:{
-                        hostDir:appSettings.hostDir,
+                        hostDir: (appSettings.hostDir == null) ? undefined : appSettings.hostDir,
                         fullPath:appSettings.appDir,
-                        name:appName
+                        name:appName,
+                        template: (appSettings.viewsDir == null) ? "views" : appSettings.viewsDir,
+                        authenticate:appSettings.authenticate,
+                        middleWare:appSettings.middleWare
                     },
                     controllersCache: controllersCache,
                     settings:{

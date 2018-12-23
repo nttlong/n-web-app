@@ -1,3 +1,7 @@
 module.exports={
-    hostDir:"admin"
+    hostDir:"admin",
+    staticDir:"MyStatic",
+    viewsDir:null,
+    authenticate:null,
+    middleWare:null
 }

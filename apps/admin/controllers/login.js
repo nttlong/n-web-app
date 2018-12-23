@@ -5,15 +5,18 @@ module.exports={
     actions:{
         post:apps.action(
             "public",
-            ()=>{
-
+            (sender)=>{
+                return new apps.view(sender, {
+                    test:"XXXX"
+                });
             }
         ),
         get:apps.action(
             "public",
             (sender) => {
-                sender.response.send("Hello this is my app")
-
+                return new apps.view(sender,{
+                    test:"YYYYYYYYY"
+                });
             }
         )
     },

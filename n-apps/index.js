@@ -1,4 +1,5 @@
 require("./extends");
+var ControllerActionSender = require("./controller-action-sender")
 var apps = {}
 class App {
     constructor(config) {
@@ -59,13 +60,23 @@ var createApp = (config) => {
 var getApp=(name)=>{
     return apps[name];
 }
+/**
+ * 
+ * @param {ControllerActionSender} sender
+ */
+function getControllerSender(sender){
+    return sender;
+}
 module.exports = {
     createApp: createApp,
     getApp:getApp,
     loadApps:require("./load-apps"),
     settings:require("./settings"),
     controller:require("./controller"),
-    action:require("./action-wrapper")
-
+    action:require("./action-wrapper"),
+    view:require("./view"),
+    ControllerActionSender: ControllerActionSender,
+    getControllerSender: getControllerSender,
+    Request:require("express").request
 };
 

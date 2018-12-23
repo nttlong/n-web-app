@@ -1,3 +1,7 @@
 module.exports={
-    hostDir:null
+    hostDir:null,
+    staticDir:null,
+    viewsDir:null,
+    authenticate:null,
+    middleWare:null
 }

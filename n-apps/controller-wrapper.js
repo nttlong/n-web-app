@@ -1,7 +1,14 @@
 var method=require("./action-wrapper");
 var filewatcher = require('filewatcher');
+var ControllerActionSender = require("./controller-action-sender");
+var controllerView =require("./view");
 var watcher = filewatcher();
 class ControllerWrapper{
+    /**
+     * 
+     * @param {*} config 
+     * @param {*} app 
+     */
     constructor(config,app){
         
         if(config.url===undefined){
@@ -36,11 +43,11 @@ class ControllerWrapper{
         this.template=config.template;
         this.fileName=config.fileName;
         this.app={
-            name:config.app.name,
-            hostDir: config.app.hostDir,
-            fullPath: config.app.fullPath,
-
+            
         };
+        Object.keys(config.app).forEach(k=>{
+            this.app[k]=config.app[k];
+        })
         this.controllersCache=config.controllersCache;
         this.controller=this.controllersCache[this.fileName];
         this.apply();
@@ -73,15 +80,19 @@ class ControllerWrapper{
             isAllow = onAuthorize(this, req, res,next);
         }
         if (isAllow) {
-            var sender={
-                url:this.url,
-                app:this.app,
-                settings:this.settings,
-                request:req,
-                response:res,
-                next:next
+            var sender = new ControllerActionSender();
+            sender.app=this.app;
+            sender.request=req;
+            sender.response=res;
+            sender.settings=this.settings;
+            sender.template=this.template;
+            sender.url=this.url;
+            sender.next=next;
+            var ret= methodOfActions.method(sender);
+            if (ret instanceof controllerView){
+                ret.render()
             }
-            return methodOfActions.method(sender);
+            return ret;
         } else {
             res.send(401, 'missing authorization');
 
@@ -95,15 +106,51 @@ class ControllerWrapper{
         }
         var me=this;
         if(this.app.hostDir){
-            this.settings.app.get("/"+this.app.hostDir+"/"+ this.url, (req, res,next) => {
-                me.execMethod(me.controller.actions.get,req,res,next);
-                
-            })
+            if(this.settings.hostDir===undefined){
+                this.settings.app.get("/" + this.app.hostDir + "/" + this.url, (req, res, next) => {
+                    me.execMethod(me.controller.actions.get, req, res, next);
+
+                });
+                if (me.controller.actions.post !== undefined) {
+                    this.settings.app.post("/" + this.app.hostDir + "/" + this.url, (req, res, next) => {
+                        me.execMethod(me.controller.actions.post, req, res, next);
+                    });
+                }
+            }
+            else {
+                this.settings.app.get("/" +this.settings.hostDir+"/" + this.app.hostDir + "/" + this.url, (req, res, next) => {
+                    me.execMethod(me.controller.actions.get, req, res, next);
+
+                });
+                if (me.controller.actions.post !== undefined) {
+                    this.settings.app.post("/" + this.settings.hostDir +"/" + this.app.hostDir + "/" + this.url, (req, res, next) => {
+                        me.execMethod(me.controller.actions.post, req, res, next);
+                    });
+                }
+            }
+            
         }
         else{
-            this.settings.app.get("/"+this.url, (req, res) => {
-                me.execMethod(me.controller.actions.get, req, res, next);
-            })
+            if (this.settings.hostDir === undefined) {
+                this.settings.app.get("/"+this.url, (req, res) => {
+                    me.execMethod(me.controller.actions.get, req, res, next);
+                });
+                if (me.controller.actions.post !== undefined) {
+                    this.settings.app.post("/" + this.url, (req, res, next) => {
+                        me.execMethod(me.controller.actions.post, req, res, next);
+                    });
+                }
+            }
+            else {
+                this.settings.app.get("/" + this.settings.hostDir +"/" + this.url, (req, res) => {
+                    me.execMethod(me.controller.actions.get, req, res, next);
+                });
+                if (me.controller.actions.post !== undefined) {
+                    this.settings.app.post("/" + this.settings.hostDir +"/" + this.url, (req, res, next) => {
+                        me.execMethod(me.controller.actions.post, req, res, next);
+                    });
+                }
+            }
         }
        
 
@@ -112,41 +159,3 @@ class ControllerWrapper{
 
 }
 module.exports = ControllerWrapper
-/*
-    if(config.onGet){
-                    if (appSettings.hostDir){
-
-                        epApp.get("/" + appSettings.hostDir+"/" + config.url, (req, res) => {
-                            var ctrl = controllersCache[controllerFile];
-                            sender.request=res;
-                            sender.response=res;
-                            ctrl.onGet(sender);
-                        })
-                    }else {
-                        epApp.get("/" + config.url, (req, res) => {
-                            var ctrl = controllersCache[controllerFile];
-                            sender.request = res;
-                            sender.response = res;
-                            ctrl.onGet(sender);
-                        })
-                    }
-
-                }
-                if (config.onPost) {
-                    if (appSettings.hostDir) {
-                        epApp.post("/" + appSettings.hostDir + "/" + config.url, (req, res) => {
-                            var ctrl = controllersCache[controllerFile];
-                            sender.request = res;
-                            sender.response = res;
-                            ctrl.onPost(sender);
-                        })
-                    } else {
-                        epApp.post("/" + config.url, (req, res) => {
-                            var ctrl = controllersCache[controllerFile];
-                            sender.request = res;
-                            sender.response = res;
-                            ctrl.onPost(sender);
-                        })
-                    }
-                }
-*/
