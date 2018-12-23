@@ -66,6 +66,11 @@ function syncFromFile(lang,key,value,cb){
        try {
            var data = fs.readFileSync(resFile, 'utf8');
            var json =JSON.parse(convert.xml2json(data, { compact: true}));
+           if(!json.root){
+               json.root={
+                   item:[]
+               }
+           }
            if (json.root.item===undefined){
                json.root.item=[];
            }
@@ -113,6 +118,7 @@ function getGlobalRes(lang,key,value){
     return cache[lang][key];
 
 }
+
 module.exports={
     getGlobalRes: getGlobalRes
 }
