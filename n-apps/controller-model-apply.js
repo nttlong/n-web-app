@@ -6,7 +6,7 @@ function getServerInfo(sender){
     }
     var req = sender.request;
     if (sender.settings.hostDir) {
-        ret.absUrl = req.protocol + "://" + sender.settings.hostDir+"/"+ req.get('host');
+        ret.absUrl = req.protocol + "://" +req.get('host') + "/" + sender.settings.hostDir;
     }else {
         ret.absUrl = req.protocol + "://" + req.get('host');
     }

@@ -106,7 +106,7 @@ class ControllerWrapper{
         }
         var me=this;
         if(this.app.hostDir){
-            if(this.settings.hostDir===undefined){
+            if(this.settings.hostDir===null){
                 this.settings.app.get("/" + this.app.hostDir + "/" + this.url, (req, res, next) => {
                     me.execMethod(me.controller.actions.get, req, res, next);
 

@@ -36,16 +36,31 @@ module.exports =function(){
         if (appSets.middleWare === undefined) {
             throw (new Error(`"middleWare" was not found in ${appSettingPath}`));
         }
+        
         Object.keys(appSets).forEach(key => {
             appSettings[key] = appSets[key];
-        }); 
+        });
+        if (appSettings.staticDir == null) {
+            appSettings.staticDir = "static";
+        } 
         var AppStaticDir = path.sep.join(appDir, appSettings.staticDir);
-        if (appSettings.hostDir){
-            epApp.use("/" + appSettings.hostDir + '/static', express.static(AppStaticDir));    
+        if(settings.hostDir!=null){
+            if (appSettings.hostDir!=null) {
+                epApp.use("/" + settings.hostDir+"/" + appSettings.hostDir + '/static', express.static(AppStaticDir));
+            }
+            else {
+                epApp.use("/" + settings.hostDir +'/static', express.static(AppStaticDir));
+            }
         }
         else {
-            epApp.use('/static', express.static(AppStaticDir));    
+            if (appSettings.hostDir!=null) {
+                epApp.use("/" + appSettings.hostDir + '/static', express.static(AppStaticDir));
+            }
+            else {
+                epApp.use('/static', express.static(AppStaticDir));
+            }
         }
+        
       
         epApp.use("/" + appSettings.hostDir + '/static', express.static(AppStaticDir));
         var stat = fs.statSync(appDir);

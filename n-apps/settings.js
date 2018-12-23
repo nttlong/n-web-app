@@ -1,6 +1,6 @@
 var settings={
     workingDir:null,
-    hostDir:"hrm",
+    hostDir:null,
     views:null
 }
 module.exports=settings;
