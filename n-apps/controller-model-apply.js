@@ -1,5 +1,6 @@
 
 var _absUrl="";
+
 function getServerInfo(sender){
     var ret={
         absUrl:""
@@ -19,6 +20,7 @@ function getServerInfo(sender){
     ret.static = ret.appUrl+"/static"
     
     ret.JSON=JSON;
+    
     return ret;
 }
 module.exports = getServerInfo

@@ -1,4 +1,4 @@
-
+var lang = require("./json-lang");
 
 class View{
     constructor(sender,model){
@@ -21,6 +21,9 @@ class View{
         var tmp = path.sep.join(templatePath,this.sender.template);
         var server=require("./controller-model-apply")(this.sender);
         this.model.$server=server;
+        this.model.$$$=(key,value)=>{
+            return lang.getGlobalRes("vi",key,value);
+        }
         var res = nunjucks.render(tmp, this.model);
         this.sender.response.send(res);
     }
