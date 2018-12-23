@@ -64,7 +64,8 @@ module.exports = {
     getApp:getApp,
     loadApps:require("./load-apps"),
     settings:require("./settings"),
-    controller:require("./controller")
+    controller:require("./controller"),
+    action:require("./action-wrapper")
 
 };
 

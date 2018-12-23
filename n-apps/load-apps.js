@@ -1,11 +1,12 @@
 var controllersCache={};
+var controllerInstance={}
+var ControllerWrapper=require("./controller-wrapper");
 module.exports =function(){
     const express = require('express');
     const epApp = express();
     var Info=require("./app-process-info").Info;
     var settings=require("./settings");
-    var filewatcher = require('filewatcher');
-    var watcher = filewatcher();
+    
     var fs=require("fs");
     var path=require("path");
     var appsDir=path.sep.join(settings.workingDir,"apps");
@@ -40,59 +41,39 @@ module.exports =function(){
         var stat = fs.statSync(appDir);
         if (stat.isDirectory()){
             var controllerDir = path.sep.join(appDir,"controllers");
-            
-            watcher.on('change', function (file, stat) {
-                delete require.cache[file];
-                controllersCache[file] = require(controllerFile);
-                console.log('File modified: %s', file);
-                if (!stat) console.log('deleted');
-            });
             var controllerDirSubDirs=fs.readdirSync(controllerDir);
             for(var j=0;j<controllerDirSubDirs.length;j++){
                 var controllerFile = path.join(controllerDir, controllerDirSubDirs[j]);
-                watcher.add(controllerFile);
+                
                 controllersCache[controllerFile] = require(controllerFile);
-                var config= require(controllerFile);
-                var sender={
-                    app:appSettings,
-                    settings:settings
-                }
-                if(config.onGet){
-                    if (appSettings.hostDir){
-                        
-                        epApp.get("/" + appSettings.hostDir+"/" + config.url, (req, res) => {
-                            var ctrl = controllersCache[controllerFile];
-                            sender.request=res;
-                            sender.response=res;
-                            ctrl.onGet(sender);
-                        })
-                    }else {
-                        epApp.get("/" + config.url, (req, res) => {
-                            var ctrl = controllersCache[controllerFile];
-                            sender.request = res;
-                            sender.response = res;
-                            ctrl.onGet(sender);
-                        })
+                var config = controllersCache[controllerFile]
+                var controllerConfig={
+                    fileName:controllerFile,
+                    url:config.url,
+                    template:appSettings.template||"templates",
+                    app:{
+                        hostDir:appSettings.hostDir,
+                        fullPath:appSettings.appDir,
+                        name:appName
+                    },
+                    controllersCache: controllersCache,
+                    settings:{
+                        app:epApp
                     }
-                    
+
                 }
-                if (config.onPost) {
-                    if (appSettings.hostDir) {
-                        epApp.post("/" + appSettings.hostDir + "/" + config.url, (req, res) => {
-                            var ctrl = controllersCache[controllerFile];
-                            sender.request = res;
-                            sender.response = res;
-                            ctrl.onPost(sender);
-                        })
-                    } else {
-                        epApp.post("/" + config.url, (req, res) => {
-                            var ctrl = controllersCache[controllerFile];
-                            sender.request = res;
-                            sender.response = res;
-                            ctrl.onPost(sender);
-                        })
-                    }
-                }
+                Object.keys(settings).forEach(k=>{
+                    controllerConfig.settings[k]=settings[k];
+                })
+                Object.keys(appSettings).forEach(k=>{
+                    controllerConfig.app[k]=appSettings[k];
+                })
+                // var sender={
+                //     app:appSettings,
+                //     settings:settings
+                // }
+                controllerInstance[controllerFile] = new ControllerWrapper(controllerConfig,epApp);
+                
                 
                 
 

@@ -2,9 +2,23 @@ var apps=require("./../../../n-apps")
 module.exports={
     url:"login",
     template:"login.html",
-    onGet:(sender)=>{
+    actions:{
+        post:apps.action(
+            "public",
+            ()=>{
 
-        var x=1;
-        sender.response.send("test")
+            }
+        ),
+        get:apps.action(
+            "public",
+            (sender) => {
+                sender.response.send("Hello this is my app")
+
+            }
+        )
+    },
+    ajax:{
+
     }
+    
 }
